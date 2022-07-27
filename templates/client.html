@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Flask - WebSocket</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+
+        function get_curr_timestamp() {
+            let date = new Date();
+            let options = {
+                weekday: "long", year: "numeric", month: "short",
+                day: "numeric", hour: "2-digit", minute: "2-digit"
+            };
+            return date.toLocaleTimeString("en-us", options)
+        }
+
+        $(document).ready(function() {
+
+            var socket = io.connect('http://localhost:8000');
+
+            socket.on('connect', () => {
+                socket.emit('join', socket.id);
+            })
+
+            socket.on('num_clients', function(msg) {
+                var d = get_curr_timestamp();
+                $('#log').append('<br>' + $('<div/>').text(`[${d}] Number of clients connected : ${msg}`).html() + '<br>');
+                $('#log').scrollTop($('#log')[0].scrollHeight);
+            });
+
+            socket.on('ping', function(msg) {
+                var d = get_curr_timestamp();
+                $('#log').append('<br>' + $('<div/>').text(`[${d}] PING from the server : ${msg}`).html() + '<br>');
+                $('#log').scrollTop($('#log')[0].scrollHeight);
+            });
+
+            socket.on('server_time', function(msg) {
+                var d = get_curr_timestamp();
+                $('#log').append('<br>' + $('<div/>').text(`[${d}] Server time :  ${msg.timestamp}`).html() + '<br>');
+                $('#log').scrollTop($('#log')[0].scrollHeight);
+            });
+
+            socket.on('client_time', function(msg) {
+                var d = get_curr_timestamp();
+                $('#log').append('<br>' + $('<div/>').text(`[${d}] Time duration since the connection : ${msg.connection_time} seconds`).html() + '<br>');
+                $('#log').scrollTop($('#log')[0].scrollHeight);
+            });
+
+            $('#server_time').click(function() {
+                socket.emit('server_time', socket.id);
+            });
+
+            $('#client_time').click(function() {
+                socket.emit('client_time', socket.id);
+            });
+
+            $('#num_clients').click(function() {
+                socket.emit('num_clients', socket.id);
+            });
+
+            $(window).on('unload', function() {
+                socket.emit('disconnect', socket.id);
+            });
+        });
+    </script>
+</head>
+<style>
+    body{
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        margin: 100px;
+        background-color: #ffffff;
+        overflow: hidden;
+    }
+
+    button{
+        font-size: 15px;
+    }
+
+    .btn-group button {
+      background-color: #23395d;
+      border: 1px solid #ffffff;
+      color: white;
+      padding: 10px 24px;
+      cursor: pointer;
+      float: left;
+    }
+
+    .btn-group:after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+    .btn-group button:not(:last-child) {
+      border-right: none;
+    }
+
+    .btn-group button:hover {
+      background-color: #192841;
+    }
+
+    #log{
+        font-size: 20px;
+        overflow: scroll;
+        height: 350px;
+    }
+</style>
+<body style="background-color:white;">
+    <!-- create three buttons -->
+    <div class="btn-group" style="width:100%">
+        <button id="server_time" style="width:33.3%">Fetch Server Time</button>
+        <button id="num_clients" style="width:33.3%">Fetch Number of Connected Clients</button>
+        <button id="client_time" style="width:33.3%">Fetch Total Time Since the Connection</button>
+    </div>
+    <div id="log"></div>
+</body>
+</html>
