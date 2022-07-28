@@ -5,6 +5,9 @@ from datetime import datetime
 import redis
 from dateutil.relativedelta import relativedelta as rd
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 redis_host = os.getenv('REDIS_HOST') or "localhost"
 redis_port = os.getenv('REDIS_PORT') or 6379
@@ -124,4 +127,4 @@ t.start()
 '''
 
 if __name__ == '__main__':
-    socket_.run(app, port=os.getenv('PORT') or 8000, debug=True)
+    socket_.run(app, port=os.getenv('PORT') or 8000, debug=os.getenv('DEBUG') == 'True')
