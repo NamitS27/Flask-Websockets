@@ -30,7 +30,7 @@ and expiry mechanism to the key-value pair in place.
 
 
 app = Flask(__name__)
-socket_ = SocketIO(app)
+socket_ = SocketIO(app, async_mode='eventlet')
 
 
 @app.route('/')
@@ -112,7 +112,7 @@ def ping(id):
 '''
 The following code can be uncommented in order to send a specific message to all clients after a specific time interval.
 The only disadvantage of this approach is that the message will be tried to sent to all clients, even if they are
-not connected to the server. Also, a thread will be created for each client, which will be consuming CPU resources.
+not connected to the server. Also, a thread will be created & will be consume CPU resources.
 
 from threading import Thread
 def ping():
