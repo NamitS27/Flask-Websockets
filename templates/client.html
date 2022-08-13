@@ -10,7 +10,7 @@
             let date = new Date();
             let options = {
                 weekday: "long", year: "numeric", month: "short",
-                day: "numeric", hour: "2-digit", minute: "2-digit"
+                day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"
             };
             return date.toLocaleTimeString("en-us", options)
         }
@@ -30,9 +30,9 @@
                 socket.emit('join', socket.id);
             })
 
-            setInterval(function() {
-                socket.emit('ping', socket.id); // sending ping to the server every minute
-            }, 60000);
+            // setInterval(function() {
+            //     socket.emit('ping', socket.id); // sending ping to the server every minute
+            // }, 5000);
 
             // Listen for events and appending the log div
             socket.on('num_clients', function(msg) {
@@ -71,8 +71,20 @@
                 socket.emit('num_clients', socket.id);
             });
 
+            $('#heartbt').click(function() {
+                socket.emit('heartbeat', {
+                    socket_id: socket.id,
+                    heartbeat: $('#seconds').val()
+                });
+                var d = get_curr_timestamp();
+                $('#log').append('<br>' + $('<div/>').text(`[${d}] Heartbeat set for ${$('#seconds').val()} seconds`).html() + '<br>');
+                scroll_down();
+                $('#seconds').hide();
+                $('#heartbt').hide();
+            });
+
             $('#disconnect').click(function() {
-                socket.disconnect();
+                socket.disconnect(socket.id);
                 $('#log').append('<br>' + $('<div/>').text('CLIENT IS DISCONNECTED').html() + '<br>');
                 scroll_down();
                 $('#connect').show();
@@ -80,6 +92,8 @@
                 $('#server_time').hide();
                 $('#client_time').hide();
                 $('#num_clients').hide();
+                $('#seconds').hide();
+                $('#heartbt').hide();
             });
 
             $('#connect').click(function() {
@@ -89,6 +103,9 @@
                 $('#server_time').show();
                 $('#client_time').show();
                 $('#num_clients').show();
+                $('#seconds').show();
+                $('#heartbt').show();
+
             });
 
             window.addEventListener('beforeunload', function() {
@@ -105,7 +122,7 @@
         overflow: hidden;
     }
 
-    .btn-group button {
+    .btn-group button, #heartbt {
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         background-color: #23395d;
         border: 1px solid #ffffff;
@@ -126,8 +143,19 @@
         border-right: none;
     }
 
-    .btn-group button:hover {
+    .btn-group button:hover, #heartbt:hover {
         background-color: #192841;
+    }
+
+    .heartbeat {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    #seconds {
+        padding: 0 12px;
+        margin-right: 10px;
+        font-size: medium;
     }
 
     #log{
@@ -146,6 +174,11 @@
         <button id="disconnect" style="width:25%">Disconnect</button>
         <button id="connect" style="width:100%">Connect</button>
     </div>
+    <div class="heartbeat">
+        <input type="number" id="seconds" placeholder="Enter the number of seconds to set the heartbeat" style="width:60%; margin-bottom: 20px;">
+        <button id="heartbt" style="width:40%; margin-bottom: 20px;">Set Heartbeat</button>
+    </div>
+
     <h3 style="color: #23395d; margin-bottom: 5px;">LOGS</h3>
     <div id="log"></div>
 </body>
